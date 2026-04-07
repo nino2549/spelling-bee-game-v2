@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelling Bee Hard B1-B2</title>
+<style>
+body{font-family:sans-serif;background:#f0f4ff;padding:20px;text-align:center}
+button,input{padding:10px;font-size:16px;margin:5px}
+.box{background:white;padding:20px;border-radius:12px;max-width:500px;margin:auto}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Spelling Bee (Hard B1-B2)</h2>
+<p id="sentence">Press start</p>
+<input id="answer" placeholder="Type word"/>
+<br>
+<button onclick="speakWord()">🔊 Word</button>
+<button onclick="speakSentence()">🗣 Sentence</button>
+<br>
+<button onclick="check()">Check</button>
+<button onclick="next()">Next</button>
+<p id="result"></p>
+</div>
+
+<script>
+const words = [
+{word:"accommodation",sentence:"We booked accommodation near the beach."},
+{word:"committee",sentence:"The committee will decide soon."},
+{word:"necessary",sentence:"This step is necessary."},
+{word:"pronunciation",sentence:"Her pronunciation is excellent."},
+{word:"entrepreneur",sentence:"He wants to be an entrepreneur."},
+{word:"responsibility",sentence:"This is your responsibility."},
+{word:"communication",sentence:"Good communication is important."},
+{word:"knowledge",sentence:"Reading increases your knowledge."},
+{word:"separate",sentence:"Please separate the papers."},
+{word:"beginning",sentence:"This is just the beginning."}
+];
+
+let current = 0;
+
+function speak(text){
+ let u = new SpeechSynthesisUtterance(text);
+ u.lang="en-US";
+ speechSynthesis.speak(u);
+}
+
+function speakWord(){ speak(words[current].word); }
+function speakSentence(){ speak(words[current].sentence); }
+
+function check(){
+ let ans=document.getElementById("answer").value.toLowerCase();
+ if(ans===words[current].word){
+  document.getElementById("result").innerText="✅ Correct";
+ }else{
+  document.getElementById("result").innerText="❌ "+words[current].word;
+ }
+}
+
+function next(){
+ current=(current+1)%words.length;
+ document.getElementById("sentence").innerText=words[current].sentence.replace(new RegExp(words[current].word,"gi"),"_____");
+ document.getElementById("answer").value="";
+ document.getElementById("result").innerText="";
+}
+
+</script>
+</body>
+</html>
