@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Spelling Bee Hard B2-C1</title>
 
 <style>
@@ -10,24 +10,47 @@ body{
   font-family:sans-serif;
   background:#f0f4ff;
   padding:20px;
-  text-align:center
+  text-align:center;
 }
-button,input{
+button,input,textarea{
   padding:10px;
   font-size:16px;
-  margin:5px
+  margin:5px;
+}
+textarea{
+  width:100%;
+  max-width:700px;
+  min-height:180px;
+  resize:vertical;
 }
 .box{
   background:white;
   padding:20px;
   border-radius:12px;
-  max-width:500px;
-  margin:auto
+  max-width:760px;
+  margin:auto;
 }
 #ipa{
   color:#666;
   font-size:14px;
   margin-bottom:10px;
+}
+#result{
+  font-weight:bold;
+  min-height:28px;
+}
+#summary{
+  margin-top:16px;
+  font-size:18px;
+  font-weight:bold;
+  color:#1b4d9b;
+}
+.small{
+  font-size:14px;
+  color:#555;
+}
+hr{
+  margin:20px 0;
 }
 </style>
 </head>
@@ -35,154 +58,279 @@ button,input{
 <body>
 
 <div class="box">
-<h2>🔥 Spelling Bee (Hard B2–C1)</h2>
+  <h2>🔥 Spelling Bee (Hard B2–C1)</h2>
 
-<p id="progress"></p>
-<p id="sentence">Press Start</p>
-<p id="ipa"></p>
+  <p><b>เพิ่มคำศัพท์เองได้ 50 คำ</b></p>
+  <p class="small">
+    วางทีละ 1 คำต่อ 1 บรรทัด ไม่ต้องใส่หมายเลข<br>
+    เช่น colour / honor / analyse
+  </p>
 
-<input id="answer" placeholder="Type word"/>
+  <textarea id="wordInput" placeholder="Paste 50 words here, one word per line"></textarea><br>
+  <button onclick="loadCustomWords()">Load 50 Words</button>
 
-<br>
+  <hr>
 
-<button onclick="speakWord()">🔊 Word</button>
-<button onclick="speakSentence()">🗣 Sentence</button>
+  <p id="progress"></p>
+  <p id="sentence">Press Start</p>
+  <p id="ipa"></p>
 
-<br>
+  <input id="answer" placeholder="Type word" />
 
-<button onclick="check()">Check</button>
-<button onclick="next()">Next</button>
-<button onclick="start()">Start</button>
+  <br>
 
-<p id="result"></p>
+  <button onclick="speakWord()">🔊 Word</button>
+  <button onclick="speakSentence()">🗣 Sentence</button>
 
+  <br>
+
+  <button onclick="check()">Check</button>
+  <button onclick="next()">Next</button>
+  <button onclick="start()">Start</button>
+
+  <p id="result"></p>
+  <p id="summary"></p>
 </div>
 
 <script>
+// ===============================
+// DEFAULT WORD BANK
+// ถ้าต้องการเพิ่มคำที่สะกดได้ 2 แบบ
+// ให้ใช้ spellings:["american","british"]
+// ===============================
+let words = [
+  {spellings:["acknowledge"], ipa:"/əkˈnɒlɪdʒ/", sentence:"She refused to acknowledge the mistake."},
+  {spellings:["acquaintance"], ipa:"/əˈkweɪntəns/", sentence:"He is just an acquaintance of mine."},
+  {spellings:["aggressive"], ipa:"/əˈɡresɪv/", sentence:"The dog became aggressive suddenly."},
+  {spellings:["amateur"], ipa:"/ˈæmətə(r)/", sentence:"He is just an amateur photographer."},
+  {spellings:["apparent"], ipa:"/əˈpærənt/", sentence:"It became apparent that he was wrong."},
+  {spellings:["argument"], ipa:"/ˈɑːɡjumənt/", sentence:"They had an argument yesterday."},
+  {spellings:["bizarre"], ipa:"/bɪˈzɑː(r)/", sentence:"That was a bizarre situation."},
+  {spellings:["calendar"], ipa:"/ˈkælɪndə(r)/", sentence:"Check the calendar for the date."},
+  {spellings:["cemetery"], ipa:"/ˈsemətri/", sentence:"The cemetery is very old."},
+  {spellings:["conscience"], ipa:"/ˈkɒnʃəns/", sentence:"He has a clear conscience."},
 
-const words = [
-{word:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",sentence:"She refused to acknowledge the mistake."},
-{word:"acquaintance",ipa:"/əˈkweɪntəns/",sentence:"He is just an acquaintance of mine."},
-{word:"aggressive",ipa:"/əˈɡresɪv/",sentence:"The dog became aggressive suddenly."},
-{word:"amateur",ipa:"/ˈæmətə(r)/",sentence:"He is just an amateur photographer."},
-{word:"apparent",ipa:"/əˈpærənt/",sentence:"It became apparent that he was wrong."},
-{word:"argument",ipa:"/ˈɑːɡjumənt/",sentence:"They had an argument yesterday."},
-{word:"bizarre",ipa:"/bɪˈzɑː(r)/",sentence:"That was a bizarre situation."},
-{word:"calendar",ipa:"/ˈkælɪndə(r)/",sentence:"Check the calendar for the date."},
-{word:"cemetery",ipa:"/ˈsemətri/",sentence:"The cemetery is very old."},
-{word:"conscience",ipa:"/ˈkɒnʃəns/",sentence:"He has a clear conscience."},
+  {spellings:["bureaucracy"], ipa:"/bjʊəˈrɒkrəsi/", sentence:"The system is full of bureaucracy."},
+  {spellings:["capability"], ipa:"/ˌkeɪpəˈbɪləti/", sentence:"She has great capability."},
+  {spellings:["classification"], ipa:"/ˌklæsɪfɪˈkeɪʃən/", sentence:"The classification was incorrect."},
+  {spellings:["collaboration"], ipa:"/kəˌlæbəˈreɪʃən/", sentence:"The project requires collaboration."},
+  {spellings:["compensation"], ipa:"/ˌkɒmpenˈseɪʃən/", sentence:"He received compensation."},
+  {spellings:["controversial"], ipa:"/ˌkɒntrəˈvɜːʃəl/", sentence:"This topic is controversial."},
+  {spellings:["curiosity"], ipa:"/ˌkjʊəriˈɒsəti/", sentence:"Curiosity drives learning."},
+  {spellings:["definitely"], ipa:"/ˈdefɪnətli/", sentence:"I will definitely join."},
+  {spellings:["discipline"], ipa:"/ˈdɪsəplɪn/", sentence:"Discipline is important."},
+  {spellings:["embarrassment"], ipa:"/ɪmˈbærəsmənt/", sentence:"He felt embarrassment."},
 
-{word:"bureaucracy",ipa:"/bjʊəˈrɒkrəsi/",sentence:"The system is full of bureaucracy."},
-{word:"capability",ipa:"/ˌkeɪpəˈbɪləti/",sentence:"She has great capability."},
-{word:"classification",ipa:"/ˌklæsɪfɪˈkeɪʃən/",sentence:"The classification was incorrect."},
-{word:"collaboration",ipa:"/kəˌlæbəˈreɪʃən/",sentence:"The project requires collaboration."},
-{word:"compensation",ipa:"/ˌkɒmpenˈseɪʃən/",sentence:"He received compensation."},
+  {spellings:["environment"], ipa:"/ɪnˈvaɪrənmənt/", sentence:"We must protect the environment."},
+  {spellings:["evaluation"], ipa:"/ɪˌvæljuˈeɪʃən/", sentence:"The evaluation was fair."},
+  {spellings:["expenditure"], ipa:"/ɪkˈspendɪtʃə(r)/", sentence:"Government expenditure increased."},
+  {spellings:["facilitate"], ipa:"/fəˈsɪlɪteɪt/", sentence:"Technology facilitates communication."},
+  {spellings:["hierarchy"], ipa:"/ˈhaɪərɑːki/", sentence:"The company has a clear hierarchy."},
+  {spellings:["hypothesis"], ipa:"/haɪˈpɒθəsɪs/", sentence:"We tested the hypothesis."},
+  {spellings:["implementation"], ipa:"/ˌɪmplɪmenˈteɪʃən/", sentence:"Implementation takes time."},
+  {spellings:["inevitable"], ipa:"/ɪnˈevɪtəbl/", sentence:"Failure is inevitable sometimes."},
+  {spellings:["initiative"], ipa:"/ɪˈnɪʃətɪv/", sentence:"She showed great initiative."},
+  {spellings:["interpretation"], ipa:"/ɪnˌtɜːprɪˈteɪʃən/", sentence:"His interpretation was different."},
 
-{word:"controversial",ipa:"/ˌkɒntrəˈvɜːʃəl/",sentence:"This topic is controversial."},
-{word:"curiosity",ipa:"/ˌkjʊəriˈɒsəti/",sentence:"Curiosity drives learning."},
-{word:"definitely",ipa:"/ˈdefɪnətli/",sentence:"I will definitely join."},
-{word:"discipline",ipa:"/ˈdɪsəplɪn/",sentence:"Discipline is important."},
-{word:"embarrassment",ipa:"/ɪmˈbærəsmənt/",sentence:"He felt embarrassment."},
+  {spellings:["maintenance"], ipa:"/ˈmeɪntənəns/", sentence:"The machine needs maintenance."},
+  {spellings:["mechanism"], ipa:"/ˈmekənɪzəm/", sentence:"This is a complex mechanism."},
+  {spellings:["methodology"], ipa:"/ˌmeθəˈdɒlədʒi/", sentence:"The methodology is clear."},
+  {spellings:["miscellaneous"], ipa:"/ˌmɪsəˈleɪniəs/", sentence:"Put these in miscellaneous."},
+  {spellings:["occurrence"], ipa:"/əˈkʌrəns/", sentence:"The occurrence was rare."},
+  {spellings:["parallel"], ipa:"/ˈpærəlel/", sentence:"The lines are parallel."},
+  {spellings:["participation"], ipa:"/pɑːˌtɪsɪˈpeɪʃən/", sentence:"Participation is required."},
+  {spellings:["perseverance"], ipa:"/ˌpɜːsɪˈvɪərəns/", sentence:"Success needs perseverance."},
+  {spellings:["phenomenon"], ipa:"/fəˈnɒmɪnən/", sentence:"It is a natural phenomenon."},
+  {spellings:["privilege"], ipa:"/ˈprɪvəlɪdʒ/", sentence:"Education is a privilege."},
 
-{word:"environment",ipa:"/ɪnˈvaɪrənmənt/",sentence:"We must protect the environment."},
-{word:"evaluation",ipa:"/ɪˌvæljuˈeɪʃən/",sentence:"The evaluation was fair."},
-{word:"expenditure",ipa:"/ɪkˈspendɪtʃə(r)/",sentence:"Government expenditure increased."},
-{word:"facilitate",ipa:"/fəˈsɪlɪteɪt/",sentence:"Technology facilitates communication."},
-{word:"hierarchy",ipa:"/ˈhaɪərɑːki/",sentence:"The company has a clear hierarchy."},
+  {spellings:["procedure"], ipa:"/prəˈsiːdʒə(r)/", sentence:"Follow the procedure carefully."},
+  {spellings:["psychological"], ipa:"/ˌsaɪkəˈlɒdʒɪkəl/", sentence:"It has psychological effects."},
+  {spellings:["recommendation"], ipa:"/ˌrekəmenˈdeɪʃən/", sentence:"Thank you for your recommendation."},
+  {spellings:["responsibility"], ipa:"/rɪˌspɒnsəˈbɪləti/", sentence:"This is your responsibility."},
+  {spellings:["significant"], ipa:"/sɪɡˈnɪfɪkənt/", sentence:"This is a significant change."},
+  {spellings:["strategy"], ipa:"/ˈstrætədʒi/", sentence:"We need a new strategy."},
+  {spellings:["substantial"], ipa:"/səbˈstænʃəl/", sentence:"The increase is substantial."},
+  {spellings:["technology"], ipa:"/tekˈnɒlədʒi/", sentence:"Technology is evolving fast."},
+  {spellings:["throughout"], ipa:"/θruːˈaʊt/", sentence:"He worked throughout the night."},
+  {spellings:["ultimately"], ipa:"/ˈʌltɪmətli/", sentence:"Ultimately, we succeeded."},
 
-{word:"hypothesis",ipa:"/haɪˈpɒθəsɪs/",sentence:"We tested the hypothesis."},
-{word:"implementation",ipa:"/ˌɪmplɪmenˈteɪʃən/",sentence:"Implementation takes time."},
-{word:"inevitable",ipa:"/ɪnˈevɪtəbl/",sentence:"Failure is inevitable sometimes."},
-{word:"initiative",ipa:"/ɪˈnɪʃətɪv/",sentence:"She showed great initiative."},
-{word:"interpretation",ipa:"/ɪnˌtɜːprɪˈteɪʃən/",sentence:"His interpretation was different."},
-
-{word:"maintenance",ipa:"/ˈmeɪntənəns/",sentence:"The machine needs maintenance."},
-{word:"mechanism",ipa:"/ˈmekənɪzəm/",sentence:"This is a complex mechanism."},
-{word:"methodology",ipa:"/ˌmeθəˈdɒlədʒi/",sentence:"The methodology is clear."},
-{word:"miscellaneous",ipa:"/ˌmɪsəˈleɪniəs/",sentence:"Put these in miscellaneous."},
-{word:"occurrence",ipa:"/əˈkʌrəns/",sentence:"The occurrence was rare."},
-
-{word:"parallel",ipa:"/ˈpærəlel/",sentence:"The lines are parallel."},
-{word:"participation",ipa:"/pɑːˌtɪsɪˈpeɪʃən/",sentence:"Participation is required."},
-{word:"perseverance",ipa:"/ˌpɜːsɪˈvɪərəns/",sentence:"Success needs perseverance."},
-{word:"phenomenon",ipa:"/fəˈnɒmɪnən/",sentence:"It is a natural phenomenon."},
-{word:"privilege",ipa:"/ˈprɪvəlɪdʒ/",sentence:"Education is a privilege."},
-
-{word:"procedure",ipa:"/prəˈsiːdʒə(r)/",sentence:"Follow the procedure carefully."},
-{word:"psychological",ipa:"/ˌsaɪkəˈlɒdʒɪkəl/",sentence:"It has psychological effects."},
-{word:"recommendation",ipa:"/ˌrekəmenˈdeɪʃən/",sentence:"Thank you for your recommendation."},
-{word:"responsibility",ipa:"/rɪˌspɒnsəˈbɪləti/",sentence:"This is your responsibility."},
-{word:"significant",ipa:"/sɪɡˈnɪfɪkənt/",sentence:"This is a significant change."},
-
-{word:"strategy",ipa:"/ˈstrætədʒi/",sentence:"We need a new strategy."},
-{word:"substantial",ipa:"/səbˈstænʃəl/",sentence:"The increase is substantial."},
-{word:"technology",ipa:"/tekˈnɒlədʒi/",sentence:"Technology is evolving fast."},
-{word:"throughout",ipa:"/θruːˈaʊt/",sentence:"He worked throughout the night."},
-{word:"ultimately",ipa:"/ˈʌltɪmətli/",sentence:"Ultimately, we succeeded."}
+  // ตัวอย่างคำที่สะกดได้ 2 แบบ
+  {spellings:["colour","color"], ipa:"/ˈkʌlə(r)/", sentence:"What is your favourite colour?"},
+  {spellings:["favourite","favorite"], ipa:"/ˈfeɪvərɪt/", sentence:"Blue is my favourite color."},
+  {spellings:["organise","organize"], ipa:"/ˈɔːɡənaɪz/", sentence:"We need to organise the event."},
+  {spellings:["analyse","analyze"], ipa:"/ˈænəlaɪz/", sentence:"Please analyse the data carefully."},
+  {spellings:["centre","center"], ipa:"/ˈsentə(r)/", sentence:"They met at the shopping centre."},
+  {spellings:["theatre","theater"], ipa:"/ˈθɪətə(r)/", sentence:"We went to the theatre last night."},
+  {spellings:["travelling","traveling"], ipa:"/ˈtrævəlɪŋ/", sentence:"She loves travelling around the world."},
+  {spellings:["defence","defense"], ipa:"/dɪˈfens/", sentence:"The team played good defence today."},
+  {spellings:["licence","license"], ipa:"/ˈlaɪsəns/", sentence:"He showed his driving licence."},
+  {spellings:["honour","honor"], ipa:"/ˈɒnə(r)/", sentence:"It is an honour to meet you."}
 ];
 
+// ===============================
+// GAME VARIABLES
+// ===============================
 let current = 0;
 let order = [];
+let score = 0;
+let answered = false;
 
+// ===============================
+// SHUFFLE
+// ===============================
 function shuffle(){
- order = [...Array(words.length).keys()]
-   .sort(()=>Math.random()-0.5);
+  order = [...Array(words.length).keys()].sort(() => Math.random() - 0.5);
 }
 
+// ===============================
+// START GAME
+// ===============================
 function start(){
- shuffle();
- current = 0;
- loadWord();
+  if(words.length !== 50){
+    alert("Please prepare exactly 50 words before starting. Current total = " + words.length);
+    return;
+  }
+
+  shuffle();
+  current = 0;
+  score = 0;
+  answered = false;
+  document.getElementById("summary").innerText = "";
+  loadWord();
 }
 
+// ===============================
+// LOAD WORD
+// ===============================
 function loadWord(){
- let w = words[order[current]];
+  let w = words[order[current]];
+  let mainWord = w.spellings[0];
 
- document.getElementById("sentence").innerText =
-   w.sentence.replace(new RegExp(w.word,"gi"),"_____");
-
- document.getElementById("ipa").innerText = w.ipa;
- document.getElementById("progress").innerText =
-   (current+1) + " / " + words.length;
-
- document.getElementById("answer").value="";
- document.getElementById("result").innerText="";
+  let hiddenSentence = w.sentence.replace(new RegExp(mainWord, "gi"), "_____");
+  document.getElementById("sentence").innerText = hiddenSentence;
+  document.getElementById("ipa").innerText = w.ipa || "";
+  document.getElementById("progress").innerText = (current + 1) + " / " + words.length;
+  document.getElementById("answer").value = "";
+  document.getElementById("result").innerText = "";
+  answered = false;
 }
 
+// ===============================
+// SPEAK
+// ===============================
 function speak(text){
- let u = new SpeechSynthesisUtterance(text);
- u.lang="en-US";
- speechSynthesis.speak(u);
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 
 function speakWord(){
- speak(words[order[current]].word);
+  speak(words[order[current]].spellings[0]);
 }
 
 function speakSentence(){
- speak(words[order[current]].sentence);
+  speak(words[order[current]].sentence);
 }
 
+// ===============================
+// CHECK ANSWER
+// ===============================
 function check(){
- let ans = document.getElementById("answer").value.toLowerCase();
- let correct = words[order[current]].word;
+  if(answered) return;
 
- if(ans === correct){
-   document.getElementById("result").innerText="✅ Correct";
- }else{
-   document.getElementById("result").innerText="❌ " + correct;
- }
+  let ans = document.getElementById("answer").value.trim().toLowerCase();
+  let accepted = words[order[current]].spellings.map(x => x.toLowerCase());
+
+  if(accepted.includes(ans)){
+    document.getElementById("result").innerText = "✅ Correct";
+    score++;
+  } else {
+    document.getElementById("result").innerText =
+      "❌ Correct: " + words[order[current]].spellings.join(" / ");
+  }
+
+  answered = true;
 }
 
+// ===============================
+// NEXT
+// ===============================
 function next(){
- if(current < words.length-1){
-   current++;
-   loadWord();
- }else{
-   document.getElementById("sentence").innerText="🎉 Finished!";
- }
+  if(!answered){
+    alert("Please press Check first.");
+    return;
+  }
+
+  if(current < words.length - 1){
+    current++;
+    loadWord();
+  } else {
+    finishGame();
+  }
 }
 
+// ===============================
+// FINISH
+// ===============================
+function finishGame(){
+  document.getElementById("sentence").innerText = "🎉 Finished!";
+  document.getElementById("ipa").innerText = "";
+  document.getElementById("progress").innerText = "Completed";
+  document.getElementById("result").innerText = "";
+  document.getElementById("summary").innerText =
+    "Your score: " + score + " / 50";
+}
+
+// ===============================
+// LOAD CUSTOM 50 WORDS
+// รูปแบบ:
+// 1 คำต่อ 1 บรรทัด
+// ไม่ต้องใส่เลข
+//
+// ถ้าคำไหนมี 2 แบบ ให้พิมพ์แบบนี้:
+// colour|color
+// organise|organize
+// centre|center
+// ===============================
+function loadCustomWords(){
+  let raw = document.getElementById("wordInput").value.trim();
+
+  if(!raw){
+    alert("Please paste 50 words first.");
+    return;
+  }
+
+  let lines = raw
+    .split("\n")
+    .map(x => x.trim())
+    .filter(x => x !== "");
+
+  if(lines.length !== 50){
+    alert("Please paste exactly 50 lines. Now you have " + lines.length + " words.");
+    return;
+  }
+
+  words = lines.map(line => {
+    let spellings = line
+      .split("|")
+      .map(x => x.trim().toLowerCase())
+      .filter(x => x !== "");
+
+    return {
+      spellings: spellings,
+      ipa: "",
+      sentence: "Spell the word."
+    };
+  });
+
+  alert("Loaded successfully: 50 words");
+  document.getElementById("summary").innerText = "Ready: 50 words loaded";
+  document.getElementById("sentence").innerText = "Press Start";
+  document.getElementById("progress").innerText = "";
+  document.getElementById("ipa").innerText = "";
+  document.getElementById("result").innerText = "";
+}
 </script>
 
 </body>
