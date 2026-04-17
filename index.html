@@ -1,252 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spelling Bee Hard B2-C1</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    font-family:Arial,sans-serif;
+    background:#f0f4ff;
+    margin:0;
+    padding:20px;
+    text-align:center;
+  }
+  .box{
+    background:#fff;
+    padding:20px;
+    border-radius:16px;
+    max-width:720px;
+    margin:20px auto;
+    box-shadow:0 8px 24px rgba(0,0,0,.08);
+  }
+  h2{margin-top:0}
+  button,input,textarea{
+    padding:12px;
+    font-size:16px;
+    margin:6px;
+    border-radius:10px;
+    border:1px solid #cfd8ea;
+  }
+  button{
+    cursor:pointer;
+    border:none;
+    background:#3b82f6;
+    color:#fff;
+    min-width:110px;
+  }
+  button.secondary{background:#64748b}
+  button.success{background:#16a34a}
+  button.warn{background:#ea580c}
+  input{
+    width:min(90%,360px);
+  }
+  textarea{
+    width:100%;
+    min-height:300px;
+    resize:vertical;
+    text-align:left;
+    line-height:1.5;
+  }
+  #ipa{
+    color:#666;
+    font-size:14px;
+    margin-bottom:10px;
+  }
+  #result{
+    min-height:28px;
+    font-weight:bold;
+  }
+  #setupStatus{
+    margin-top:10px;
+    font-weight:bold;
+  }
+  .hint{
+    color:#475569;
+    font-size:14px;
+    line-height:1.5;
+    text-align:left;
+    background:#f8fafc;
+    border-radius:12px;
+    padding:12px;
+    margin-top:10px;
+  }
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="box" id="setupScreen">
+  <h2>📥 Upload 50 Words</h2>
+  <p>Paste 50 words below, one word per line. You can also use <b>word|IPA|sentence</b>.</p>
+  <textarea id="wordInput" placeholder="example&#10;acknowledge|/əkˈnɒlɪdʒ/|She refused to acknowledge the mistake."></textarea>
+  <br />
+  <button class="success" onclick="uploadWords()">Upload</button>
+  <button class="secondary" onclick="loadDefaultSet()">Use Default Set</button>
+  <p id="setupStatus"></p>
+  <div class="hint">
+    <b>Formats supported</b><br>
+    1) <code>word</code><br>
+    2) <code>word|IPA</code><br>
+    3) <code>word|IPA|sentence</code><br><br>
+    After pressing <b>Upload</b>, the page will switch straight to the game screen and the typed list will be hidden.
+  </div>
+</div>
+
+<div class="box hidden" id="gameScreen">
+  <h2>🔥 Spelling Bee (Hard B2–C1)</h2>
+  <p id="progress"></p>
+  <p id="sentence">Press Start</p>
+  <p id="ipa"></p>
+  <input id="answer" placeholder="Type word" autocomplete="off" />
+  <br />
+  <button onclick="speakWord()">🔊 Word</button>
+  <button onclick="speakSentence()">🗣 Sentence</button>
+  <br />
+  <button onclick="check()">Check</button>
+  <button class="warn" onclick="next()">Next</button>
+  <button class="success" onclick="restartGame()">Restart</button>
+  <p id="result"></p>
+</div>
+
 <script>
-  let words = [];
-  let order = [];
-  let current = 0;
+const defaultWords = [
+  {word:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",sentence:"She refused to acknowledge the mistake."},
+  {word:"acquaintance",ipa:"/əˈkweɪntəns/",sentence:"He is just an acquaintance of mine."},
+  {word:"aggressive",ipa:"/əˈɡresɪv/",sentence:"The dog became aggressive suddenly."},
+  {word:"amateur",ipa:"/ˈæmətə(r)/",sentence:"He is just an amateur photographer."},
+  {word:"apparent",ipa:"/əˈpærənt/",sentence:"It became apparent that he was wrong."},
+  {word:"argument",ipa:"/ˈɑːɡjumənt/",sentence:"They had an argument yesterday."},
+  {word:"bizarre",ipa:"/bɪˈzɑː(r)/",sentence:"That was a bizarre situation."},
+  {word:"calendar",ipa:"/ˈkælɪndə(r)/",sentence:"Check the calendar for the date."},
+  {word:"cemetery",ipa:"/ˈsemətri/",sentence:"The cemetery is very old."},
+  {word:"conscience",ipa:"/ˈkɒnʃəns/",sentence:"He has a clear conscience."},
+  {word:"bureaucracy",ipa:"/bjʊəˈrɒkrəsi/",sentence:"The system is full of bureaucracy."},
+  {word:"capability",ipa:"/ˌkeɪpəˈbɪləti/",sentence:"She has great capability."},
+  {word:"classification",ipa:"/ˌklæsɪfɪˈkeɪʃən/",sentence:"The classification was incorrect."},
+  {word:"collaboration",ipa:"/kəˌlæbəˈreɪʃən/",sentence:"The project requires collaboration."},
+  {word:"compensation",ipa:"/ˌkɒmpenˈseɪʃən/",sentence:"He received compensation."},
+  {word:"controversial",ipa:"/ˌkɒntrəˈvɜːʃəl/",sentence:"This topic is controversial."},
+  {word:"curiosity",ipa:"/ˌkjʊəriˈɒsəti/",sentence:"Curiosity drives learning."},
+  {word:"definitely",ipa:"/ˈdefɪnətli/",sentence:"I will definitely join."},
+  {word:"discipline",ipa:"/ˈdɪsəplɪn/",sentence:"Discipline is important."},
+  {word:"embarrassment",ipa:"/ɪmˈbærəsmənt/",sentence:"He felt embarrassment."},
+  {word:"environment",ipa:"/ɪnˈvaɪrənmənt/",sentence:"We must protect the environment."},
+  {word:"evaluation",ipa:"/ɪˌvæljuˈeɪʃən/",sentence:"The evaluation was fair."},
+  {word:"expenditure",ipa:"/ɪkˈspendɪtʃə(r)/",sentence:"Government expenditure increased."},
+  {word:"facilitate",ipa:"/fəˈsɪlɪteɪt/",sentence:"Technology facilitates communication."},
+  {word:"hierarchy",ipa:"/ˈhaɪərɑːki/",sentence:"The company has a clear hierarchy."},
+  {word:"hypothesis",ipa:"/haɪˈpɒθəsɪs/",sentence:"We tested the hypothesis."},
+  {word:"implementation",ipa:"/ˌɪmplɪmenˈteɪʃən/",sentence:"Implementation takes time."},
+  {word:"inevitable",ipa:"/ɪnˈevɪtəbl/",sentence:"Failure is inevitable sometimes."},
+  {word:"initiative",ipa:"/ɪˈnɪʃətɪv/",sentence:"She showed great initiative."},
+  {word:"interpretation",ipa:"/ɪnˌtɜːprɪˈteɪʃən/",sentence:"His interpretation was different."},
+  {word:"maintenance",ipa:"/ˈmeɪntənəns/",sentence:"The machine needs maintenance."},
+  {word:"mechanism",ipa:"/ˈmekənɪzəm/",sentence:"This is a complex mechanism."},
+  {word:"methodology",ipa:"/ˌmeθəˈdɒlədʒi/",sentence:"The methodology is clear."},
+  {word:"miscellaneous",ipa:"/ˌmɪsəˈleɪniəs/",sentence:"Put these in miscellaneous."},
+  {word:"occurrence",ipa:"/əˈkʌrəns/",sentence:"The occurrence was rare."},
+  {word:"parallel",ipa:"/ˈpærəlel/",sentence:"The lines are parallel."},
+  {word:"participation",ipa:"/pɑːˌtɪsɪˈpeɪʃən/",sentence:"Participation is required."},
+  {word:"perseverance",ipa:"/ˌpɜːsɪˈvɪərəns/",sentence:"Success needs perseverance."},
+  {word:"phenomenon",ipa:"/fəˈnɒmɪnən/",sentence:"It is a natural phenomenon."},
+  {word:"privilege",ipa:"/ˈprɪvəlɪdʒ/",sentence:"Education is a privilege."},
+  {word:"procedure",ipa:"/prəˈsiːdʒə(r)/",sentence:"Follow the procedure carefully."},
+  {word:"psychological",ipa:"/ˌsaɪkəˈlɒdʒɪkəl/",sentence:"It has psychological effects."},
+  {word:"recommendation",ipa:"/ˌrekəmenˈdeɪʃən/",sentence:"Thank you for your recommendation."},
+  {word:"responsibility",ipa:"/rɪˌspɒnsəˈbɪləti/",sentence:"This is your responsibility."},
+  {word:"significant",ipa:"/sɪɡˈnɪfɪkənt/",sentence:"This is a significant change."},
+  {word:"strategy",ipa:"/ˈstrætədʒi/",sentence:"We need a new strategy."},
+  {word:"substantial",ipa:"/səbˈstænʃəl/",sentence:"The increase is substantial."},
+  {word:"technology",ipa:"/tekˈnɒlədʒi/",sentence:"Technology is evolving fast."},
+  {word:"throughout",ipa:"/θruːˈaʊt/",sentence:"He worked throughout the night."},
+  {word:"ultimately",ipa:"/ˈʌltɪmətli/",sentence:"Ultimately, we succeeded."}
+];
 
-  let userAnswers = [];
-  let checkedStatus = [];
+let words = [];
+let current = 0;
+let order = [];
 
-  function uploadWords() {
-    const text = document.getElementById("wordInput").value.trim();
-    const uploadMsg = document.getElementById("uploadMsg");
+function shuffle(){
+  order = [...Array(words.length).keys()].sort(() => Math.random() - 0.5);
+}
 
-    if (!text) {
-      uploadMsg.innerText = "❌ Please paste 50 lines first.";
-      return;
-    }
+function escapeRegExp(str){
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-    const lines = text
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line !== "");
+function fallbackSentence(word){
+  return "Please spell the word " + word + ".";
+}
 
-    if (lines.length !== 50) {
-      uploadMsg.innerText = "❌ You must enter exactly 50 lines. Current: " + lines.length;
-      return;
-    }
+function normalizeEntry(line){
+  const parts = line.split("|").map(x => x.trim()).filter(Boolean);
+  if(parts.length === 0) return null;
+  const word = parts[0];
+  const ipa = parts[1] || "";
+  const sentence = parts[2] || fallbackSentence(word);
+  return { word, ipa, sentence };
+}
 
-    const parsedWords = [];
-    const seen = new Set();
+function uploadWords(){
+  const raw = document.getElementById("wordInput").value.trim();
+  const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const parts = line.split("|");
-
-      if (parts.length < 2) {
-        uploadMsg.innerText = `❌ Line ${i + 1} is invalid. Use format: word|sentence`;
-        return;
-      }
-
-      const word = parts[0].trim();
-      const sentence = parts.slice(1).join("|").trim();
-
-      if (!word || !sentence) {
-        uploadMsg.innerText = `❌ Line ${i + 1} is incomplete.`;
-        return;
-      }
-
-      const lowerWord = word.toLowerCase();
-      if (seen.has(lowerWord)) {
-        uploadMsg.innerText = `❌ Duplicate word found: ${word}`;
-        return;
-      }
-      seen.add(lowerWord);
-
-      parsedWords.push({
-        word: word,
-        sentence: sentence
-      });
-    }
-
-    words = parsedWords;
-
-    document.getElementById("wordInput").value = "";
-    document.getElementById("uploadMsg").innerText = "";
-
-    document.getElementById("uploadPage").classList.add("hidden");
-    document.getElementById("summaryPage").classList.add("hidden");
-    document.getElementById("gamePage").classList.remove("hidden");
-
-    startGame();
+  if(lines.length !== 50){
+    document.getElementById("setupStatus").innerText = "⚠️ Please enter exactly 50 lines. Now: " + lines.length;
+    return;
   }
 
-  function shuffleArray(arr) {
-    const newArr = [...arr];
-    for (let i = newArr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-    }
-    return newArr;
+  const parsed = lines.map(normalizeEntry).filter(Boolean);
+  const uniqueWords = new Set(parsed.map(x => x.word.toLowerCase()));
+
+  if(parsed.length !== 50 || uniqueWords.size !== 50){
+    document.getElementById("setupStatus").innerText = "⚠️ Please make sure all 50 words are valid and not duplicated.";
+    return;
   }
 
-  function startGame() {
-    order = shuffleArray([...Array(words.length).keys()]);
-    current = 0;
-    userAnswers = new Array(words.length).fill("");
-    checkedStatus = new Array(words.length).fill(null);
+  words = parsed;
+
+  // hide setup immediately so the entered list cannot be seen
+  document.getElementById("wordInput").value = "";
+  document.getElementById("setupStatus").innerText = "";
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+
+  start();
+}
+
+function loadDefaultSet(){
+  words = [...defaultWords];
+  document.getElementById("wordInput").value = "";
+  document.getElementById("setupStatus").innerText = "";
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  start();
+}
+
+function start(){
+  shuffle();
+  current = 0;
+  loadWord();
+}
+
+function loadWord(){
+  if(!words.length) return;
+
+  let w = words[order[current]];
+  let hiddenSentence = w.sentence;
+
+  if(w.word){
+    try{
+      hiddenSentence = w.sentence.replace(new RegExp(escapeRegExp(w.word), "gi"), "_____");
+    }catch(e){
+      hiddenSentence = fallbackSentence("this word");
+    }
+  }
+
+  document.getElementById("sentence").innerText = hiddenSentence;
+  document.getElementById("ipa").innerText = w.ipa || "";
+  document.getElementById("progress").innerText = (current + 1) + " / " + words.length;
+  document.getElementById("answer").value = "";
+  document.getElementById("result").innerText = "";
+  document.getElementById("answer").focus();
+}
+
+function speak(text){
+  let u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+function speakWord(){
+  if(!words.length) return;
+  speak(words[order[current]].word);
+}
+
+function speakSentence(){
+  if(!words.length) return;
+  speak(words[order[current]].sentence);
+}
+
+function check(){
+  if(!words.length) return;
+  let ans = document.getElementById("answer").value.trim().toLowerCase();
+  let correct = words[order[current]].word.trim().toLowerCase();
+
+  if(ans === correct){
+    document.getElementById("result").innerText = "✅ Correct";
+  }else{
+    document.getElementById("result").innerText = "❌ " + words[order[current]].word;
+  }
+}
+
+function next(){
+  if(!words.length) return;
+  if(current < words.length - 1){
+    current++;
     loadWord();
-    updateLiveScore();
+  }else{
+    document.getElementById("sentence").innerText = "🎉 Finished!";
+    document.getElementById("ipa").innerText = "";
+    document.getElementById("progress").innerText = words.length + " / " + words.length;
+    document.getElementById("result").innerText = "Great job!";
   }
+}
 
-  function restartGame() {
-    document.getElementById("summaryPage").classList.add("hidden");
-    document.getElementById("uploadPage").classList.add("hidden");
-    document.getElementById("gamePage").classList.remove("hidden");
-    startGame();
+function restartGame(){
+  if(!words.length) return;
+  start();
+}
+
+document.getElementById("answer").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    check();
   }
-
-  function goBackToUpload() {
-    words = [];
-    order = [];
-    current = 0;
-    userAnswers = [];
-    checkedStatus = [];
-
-    document.getElementById("summaryPage").classList.add("hidden");
-    document.getElementById("gamePage").classList.add("hidden");
-    document.getElementById("uploadPage").classList.remove("hidden");
-
-    document.getElementById("wordInput").value = "";
-    document.getElementById("uploadMsg").innerText = "";
-  }
-
-  function loadWord() {
-    if (!words.length) return;
-
-    const item = words[order[current]];
-    document.getElementById("progress").innerText = `${current + 1} / ${words.length}`;
-    document.getElementById("sentence").innerHTML = `Please spell the word _____ .<br><br>${item.sentence}`;
-    document.getElementById("answer").value = userAnswers[current] || "";
-    document.getElementById("result").innerText = "";
-    document.getElementById("answer").focus();
-  }
-
-  function updateLiveScore() {
-    let score = checkedStatus.filter(v => v === true).length;
-    document.getElementById("liveScore").innerText = `Score: ${score}`;
-  }
-
-  function speak(text) {
-    if (!text) return;
-
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    speechSynthesis.speak(utterance);
-  }
-
-  function speakWord() {
-    if (!words.length) return;
-    const item = words[order[current]];
-    speak(item.word);
-  }
-
-  function speakSentence() {
-    if (!words.length) return;
-    const item = words[order[current]];
-    speak(item.sentence);
-  }
-
-  function checkAnswer() {
-    if (!words.length) return;
-
-    const item = words[order[current]];
-    const ans = document.getElementById("answer").value.trim().toLowerCase();
-    const correct = item.word.trim().toLowerCase();
-
-    userAnswers[current] = document.getElementById("answer").value.trim();
-
-    if (ans === correct) {
-      checkedStatus[current] = true;
-      document.getElementById("result").innerText = "✅ Correct";
-    } else {
-      checkedStatus[current] = false;
-      document.getElementById("result").innerText = `❌ Correct answer: ${item.word}`;
-    }
-
-    updateLiveScore();
-  }
-
-  function nextWord() {
-    userAnswers[current] = document.getElementById("answer").value.trim();
-
-    if (current < words.length - 1) {
-      current++;
-      loadWord();
-    } else {
-      document.getElementById("result").innerText = "🎉 Reached the last word";
-    }
-  }
-
-  function submitQuiz() {
-    userAnswers[current] = document.getElementById("answer").value.trim();
-
-    let score = 0;
-    let correctCount = 0;
-    let wrongCount = 0;
-    let unansweredCount = 0;
-
-    const correctItems = [];
-    const wrongItems = [];
-    const unansweredItems = [];
-
-    for (let i = 0; i < words.length; i++) {
-      const item = words[order[i]];
-      const user = (userAnswers[i] || "").trim();
-      const correct = item.word.trim();
-
-      if (user === "") {
-        unansweredCount++;
-        unansweredItems.push(
-          `<div class="summary-item unanswered"><b>${i + 1}.</b> Correct: ${correct}</div>`
-        );
-      } else if (user.toLowerCase() === correct.toLowerCase()) {
-        score++;
-        correctCount++;
-        correctItems.push(
-          `<div class="summary-item correct"><b>${i + 1}.</b> ${correct}</div>`
-        );
-      } else {
-        wrongCount++;
-        wrongItems.push(
-          `<div class="summary-item wrong"><b>${i + 1}.</b> Your answer: ${user} | Correct: ${correct}</div>`
-        );
-      }
-    }
-
-    document.getElementById("finalScoreText").innerText = `Score: ${score} / ${words.length}`;
-
-    document.getElementById("overviewBox").innerHTML = `
-      <div class="summary-item"><b>Total Questions:</b> ${words.length}</div>
-      <div class="summary-item correct"><b>Correct:</b> ${correctCount}</div>
-      <div class="summary-item wrong"><b>Wrong:</b> ${wrongCount}</div>
-      <div class="summary-item unanswered"><b>Unanswered:</b> ${unansweredCount}</div>
-    `;
-
-    document.getElementById("correctList").innerHTML =
-      correctItems.length ? correctItems.join("") : `<div class="summary-item">-</div>`;
-
-    document.getElementById("wrongList").innerHTML =
-      wrongItems.length ? wrongItems.join("") : `<div class="summary-item">-</div>`;
-
-    document.getElementById("unansweredList").innerHTML =
-      unansweredItems.length ? unansweredItems.join("") : `<div class="summary-item">-</div>`;
-
-    document.getElementById("gamePage").classList.add("hidden");
-    document.getElementById("uploadPage").classList.add("hidden");
-    document.getElementById("summaryPage").classList.remove("hidden");
-  }
-
-  document.addEventListener("keydown", function(e) {
-    const gameVisible = !document.getElementById("gamePage").classList.contains("hidden");
-    if (!gameVisible) return;
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      checkAnswer();
-    }
-  });
+});
 </script>
+</body>
+</html>
