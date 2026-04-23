@@ -1,244 +1,372 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Spelling Bee Hard B2-C1</title>
+<title>Spelling Bee Upload Any Number of Words</title>
 <style>
-  *{box-sizing:border-box}
+  * { box-sizing: border-box; }
   body{
-    font-family:Arial,sans-serif;
-    background:#f0f4ff;
     margin:0;
     padding:20px;
+    font-family: Arial, sans-serif;
+    background:#eef3fb;
+    color:#0f172a;
     text-align:center;
   }
-  .box{
-    background:#fff;
-    padding:20px;
+  .card{
+    max-width: 980px;
+    margin: 0 auto 20px;
+    background:#ffffff;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+  }
+  h1,h2,h3,p{ margin-top:0; }
+  .sub{
+    color:#475569;
+    line-height:1.6;
+  }
+  textarea, input{
+    width:100%;
+    border:1px solid #cbd5e1;
     border-radius:16px;
-    max-width:820px;
-    margin:20px auto;
-    box-shadow:0 8px 24px rgba(0,0,0,.08);
-  }
-  h2,h3{margin-top:0}
-  button,input,textarea{
-    padding:12px;
-    font-size:16px;
-    margin:6px;
-    border-radius:10px;
-    border:1px solid #cfd8ea;
-  }
-  button{
-    cursor:pointer;
-    border:none;
-    background:#3b82f6;
-    color:#fff;
-    min-width:110px;
-  }
-  button.secondary{background:#64748b}
-  button.success{background:#16a34a}
-  button.warn{background:#ea580c}
-  button.submit{background:#7c3aed}
-  input{
-    width:min(90%,420px);
+    padding:16px;
+    font-size:18px;
+    outline:none;
   }
   textarea{
-    width:100%;
-    min-height:320px;
+    min-height:300px;
     resize:vertical;
-    text-align:left;
-    line-height:1.6;
+    line-height:1.7;
   }
-  #ipa{
-    color:#666;
-    font-size:14px;
-    margin-bottom:10px;
-    min-height:20px;
+  input{
+    max-width:480px;
   }
-  #thaiMeaning{
-    color:#0f172a;
-    font-size:16px;
-    margin:6px 0 12px;
-    min-height:24px;
-    font-weight:bold;
+  .btns{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-top:16px;
   }
-  #result{
-    min-height:52px;
-    font-weight:bold;
-    line-height:1.6;
-    white-space:pre-line;
+  button{
+    border:none;
+    border-radius:14px;
+    padding:14px 22px;
+    font-size:18px;
+    cursor:pointer;
+    color:#fff;
+    min-width:130px;
+    transition:.15s ease;
   }
-  #setupStatus{
-    margin-top:10px;
-    font-weight:bold;
-  }
-  .hint{
-    color:#475569;
-    font-size:14px;
-    line-height:1.6;
-    text-align:left;
-    background:#f8fafc;
-    border-radius:12px;
-    padding:12px;
-    margin-top:10px;
-  }
-  .hidden{display:none}
-  .summary{
-    text-align:left;
-    margin-top:20px;
-  }
-  .summary-card{
+  button:hover{ transform:translateY(-1px); opacity:.96; }
+  .green{ background:#2fa24d; }
+  .blue{ background:#3b82f6; }
+  .slate{ background:#64748b; }
+  .orange{ background:#ea580c; }
+  .purple{ background:#7c3aed; }
+  .red{ background:#dc2626; }
+
+  .note{
     background:#f8fafc;
     border:1px solid #e2e8f0;
-    border-radius:12px;
-    padding:14px;
-    margin:12px 0;
+    border-radius:18px;
+    padding:18px;
+    margin-top:18px;
+    text-align:left;
+    line-height:1.7;
   }
-  .summary-card h3{
-    margin-bottom:10px;
+  .status{
+    min-height:28px;
+    margin-top:12px;
+    font-weight:bold;
   }
-  .summary-item{
-    padding:8px 0;
-    border-bottom:1px dashed #cbd5e1;
+  .hidden{ display:none; }
+
+  .topline{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .badge{
+    background:#eff6ff;
+    color:#1d4ed8;
+    border:1px solid #bfdbfe;
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:15px;
+    font-weight:bold;
+  }
+  .question-box{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    padding:20px;
+    margin:16px auto;
+  }
+  .sentence{
+    font-size:28px;
     line-height:1.5;
+    font-weight:700;
+    min-height:88px;
+  }
+  .thai{
+    font-size:22px;
+    color:#0f172a;
+    min-height:34px;
+    font-weight:bold;
+  }
+  .result{
+    min-height:62px;
+    line-height:1.7;
+    font-size:20px;
+    font-weight:bold;
+    white-space:pre-line;
+    margin-top:10px;
+  }
+  .good{ color:#15803d; }
+  .bad{ color:#b91c1c; }
+  .warn-text{ color:#a16207; }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin:20px 0;
+  }
+  .summary-box{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:16px;
+  }
+  .list-box{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    padding:16px;
+    text-align:left;
+    margin-top:14px;
+  }
+  .item{
+    padding:10px 0;
+    border-bottom:1px dashed #cbd5e1;
+    line-height:1.6;
     word-break:break-word;
   }
-  .summary-item:last-child{
-    border-bottom:none;
+  .item:last-child{ border-bottom:none; }
+
+  @media (max-width: 700px){
+    body{ padding:12px; }
+    .card{ padding:18px; border-radius:18px; }
+    textarea, input{ font-size:16px; }
+    .sentence{ font-size:22px; min-height:70px; }
+    .thai{ font-size:18px; }
+    .result{ font-size:18px; }
+    button{ width:100%; max-width:340px; }
   }
-  .correct{color:#15803d}
-  .wrong{color:#b91c1c}
-  .unanswered{color:#a16207}
 </style>
 </head>
 <body>
 
-<div class="box" id="setupScreen">
-  <h2>📥 Upload 50 Words</h2>
-  <p>Paste exactly 50 lines in this format: <b>Word|Sentence|คำแปลไทย</b></p>
-  <textarea id="wordInput" placeholder="acknowledge|She refused to acknowledge the mistake.|ยอมรับ&#10;acquaintance|He is just an acquaintance of mine.|คนรู้จัก"></textarea>
-  <br />
-  <button class="success" onclick="uploadWords()">Upload</button>
-  <button class="secondary" onclick="loadDefaultSet()">Use Default Set</button>
-  <p id="setupStatus"></p>
-  <div class="hint">
-    <b>Required format</b><br>
-    <code>Word|Sentence|คำแปลไทย</code><br><br>
-    Example:<br>
-    <code>environment|We must protect the environment.|สิ่งแวดล้อม</code><br><br>
-    ต้องใส่ให้ครบ <b>50 บรรทัด</b> และคำศัพท์ต้องไม่ซ้ำกัน
+<div class="card" id="setupScreen">
+  <h1>📥 Upload Words</h1>
+  <p class="sub">
+    วางคำศัพท์ได้ตามต้องการ<br>
+    รูปแบบต่อ 1 บรรทัด: <b>Word|Sentence|คำแปลไทย</b>
+  </p>
+
+  <textarea id="wordInput" placeholder="accommodate|The hotel can accommodate 200 guests.|รองรับ
+strategy|We need a clear strategy.|กลยุทธ์
+ubiquitous|Smartphones are ubiquitous today.|มีอยู่ทั่วไป"></textarea>
+
+  <div class="btns">
+    <button class="green" onclick="uploadWords()">Upload</button>
+    <button class="slate" onclick="loadDefaultSet()">Use Sample Set</button>
+    <button class="orange" onclick="clearInput()">Clear</button>
+  </div>
+
+  <div id="setupStatus" class="status"></div>
+
+  <div class="note">
+    <b>วิธีใช้</b><br>
+    1) ใส่กี่คำก็ได้ อย่างน้อย 1 คำ<br>
+    2) 1 บรรทัด = 1 คำศัพท์<br>
+    3) รูปแบบต้องเป็น <code>Word|Sentence|คำแปลไทย</code><br>
+    4) คำศัพท์ห้ามซ้ำกัน<br><br>
+
+    <b>ตัวอย่าง</b><br>
+    <code>environment|We must protect the environment.|สิ่งแวดล้อม</code>
   </div>
 </div>
 
-<div class="box hidden" id="gameScreen">
-  <h2>🔥 Spelling Bee (Hard B2–C1)</h2>
-  <p id="progress"></p>
-  <p id="sentence">Press Start</p>
-  <p id="ipa"></p>
-  <p id="thaiMeaning"></p>
-  <input id="answer" placeholder="Type word" autocomplete="off" />
-  <br />
-  <button onclick="speakWord()">🔊 Word</button>
-  <button onclick="speakSentence()">🗣 Sentence</button>
-  <br />
-  <button onclick="check()">Check</button>
-  <button class="warn" onclick="next()">Next</button>
-  <button class="submit" onclick="submitQuiz()">Submit</button>
-  <button class="success" onclick="restartGame()">Restart</button>
-  <p id="result"></p>
+<div class="card hidden" id="gameScreen">
+  <div class="topline">
+    <div class="badge" id="progress">0 / 0</div>
+    <div class="badge" id="totalWordsBadge">Total: 0 words</div>
+  </div>
+
+  <h2>🔥 Spelling Bee</h2>
+
+  <div class="question-box">
+    <div id="sentence" class="sentence">Press Start</div>
+    <div id="thaiMeaning" class="thai"></div>
+  </div>
+
+  <input id="answer" placeholder="Type the word here" autocomplete="off" />
+
+  <div class="btns">
+    <button class="blue" onclick="speakWord()">🔊 Word</button>
+    <button class="blue" onclick="speakSentence()">🗣 Sentence</button>
+    <button class="green" onclick="checkAnswer()">Check</button>
+    <button class="orange" onclick="nextWord()">Next</button>
+    <button class="purple" onclick="submitQuiz()">Submit</button>
+    <button class="red" onclick="backToSetup()">New List</button>
+  </div>
+
+  <div id="result" class="result"></div>
 </div>
 
-<div class="box hidden" id="summaryScreen">
+<div class="card hidden" id="summaryScreen">
   <h2>📊 Quiz Summary</h2>
-  <p id="finalScore" style="font-size:22px;font-weight:bold;"></p>
-  <button class="success" onclick="restartGameFromSummary()">Play Again</button>
-  <button class="secondary" onclick="backToSetup()">Upload New Set</button>
+  <p id="finalScore" style="font-size:24px;font-weight:bold;"></p>
 
-  <div class="summary">
-    <div class="summary-card">
-      <h3>Overview</h3>
-      <div id="overviewList"></div>
-    </div>
+  <div class="btns">
+    <button class="green" onclick="restartGame()">Play Again</button>
+    <button class="red" onclick="backToSetup()">Upload New List</button>
+  </div>
 
-    <div class="summary-card">
-      <h3 class="wrong">❌ Wrong Answers</h3>
-      <div id="wrongList"></div>
-    </div>
+  <div class="summary-grid">
+    <div class="summary-box"><b>Total</b><br><span id="sumTotal">0</span></div>
+    <div class="summary-box"><b class="good">Correct</b><br><span id="sumCorrect">0</span></div>
+    <div class="summary-box"><b class="bad">Wrong</b><br><span id="sumWrong">0</span></div>
+    <div class="summary-box"><b class="warn-text">Unanswered</b><br><span id="sumUnanswered">0</span></div>
+  </div>
 
-    <div class="summary-card">
-      <h3 class="unanswered">⏳ Unanswered</h3>
-      <div id="unansweredList"></div>
-    </div>
+  <div class="list-box">
+    <h3 class="bad">❌ Wrong Answers</h3>
+    <div id="wrongList"></div>
+  </div>
 
-    <div class="summary-card">
-      <h3 class="correct">✅ Correct Answers</h3>
-      <div id="correctList"></div>
-    </div>
+  <div class="list-box">
+    <h3 class="warn-text">⏳ Unanswered</h3>
+    <div id="unansweredList"></div>
+  </div>
+
+  <div class="list-box">
+    <h3 class="good">✅ Correct Answers</h3>
+    <div id="correctList"></div>
   </div>
 </div>
 
 <script>
-const defaultWords = [
-  {word:"acknowledge",sentence:"She refused to acknowledge the mistake.",thai:"ยอมรับ"},
-  {word:"acquaintance",sentence:"He is just an acquaintance of mine.",thai:"คนรู้จัก"},
-  {word:"aggressive",sentence:"The dog became aggressive suddenly.",thai:"ก้าวร้าว"},
-  {word:"amateur",sentence:"He is just an amateur photographer.",thai:"มือสมัครเล่น"},
-  {word:"apparent",sentence:"It became apparent that he was wrong.",thai:"ชัดเจน"},
-  {word:"argument",sentence:"They had an argument yesterday.",thai:"การโต้เถียง"},
-  {word:"bizarre",sentence:"That was a bizarre situation.",thai:"แปลกประหลาด"},
-  {word:"calendar",sentence:"Check the calendar for the date.",thai:"ปฏิทิน"},
-  {word:"cemetery",sentence:"The cemetery is very old.",thai:"สุสาน"},
-  {word:"conscience",sentence:"He has a clear conscience.",thai:"มโนธรรม"},
-  {word:"bureaucracy",sentence:"The system is full of bureaucracy.",thai:"ระบบราชการ"},
-  {word:"capability",sentence:"She has great capability.",thai:"ความสามารถ"},
-  {word:"classification",sentence:"The classification was incorrect.",thai:"การจัดประเภท"},
-  {word:"collaboration",sentence:"The project requires collaboration.",thai:"ความร่วมมือ"},
-  {word:"compensation",sentence:"He received compensation.",thai:"ค่าชดเชย"},
-  {word:"controversial",sentence:"This topic is controversial.",thai:"เป็นที่ถกเถียง"},
-  {word:"curiosity",sentence:"Curiosity drives learning.",thai:"ความอยากรู้อยากเห็น"},
-  {word:"definitely",sentence:"I will definitely join.",thai:"อย่างแน่นอน"},
-  {word:"discipline",sentence:"Discipline is important.",thai:"วินัย"},
-  {word:"embarrassment",sentence:"He felt embarrassment.",thai:"ความอับอาย"},
-  {word:"environment",sentence:"We must protect the environment.",thai:"สิ่งแวดล้อม"},
-  {word:"evaluation",sentence:"The evaluation was fair.",thai:"การประเมิน"},
-  {word:"expenditure",sentence:"Government expenditure increased.",thai:"รายจ่าย"},
-  {word:"facilitate",sentence:"Technology facilitates communication.",thai:"อำนวยความสะดวก"},
-  {word:"hierarchy",sentence:"The company has a clear hierarchy.",thai:"ลำดับชั้น"},
-  {word:"hypothesis",sentence:"We tested the hypothesis.",thai:"สมมติฐาน"},
-  {word:"implementation",sentence:"Implementation takes time.",thai:"การนำไปใช้"},
-  {word:"inevitable",sentence:"Failure is inevitable sometimes.",thai:"หลีกเลี่ยงไม่ได้"},
-  {word:"initiative",sentence:"She showed great initiative.",thai:"ความคิดริเริ่ม"},
-  {word:"interpretation",sentence:"His interpretation was different.",thai:"การตีความ"},
-  {word:"maintenance",sentence:"The machine needs maintenance.",thai:"การบำรุงรักษา"},
-  {word:"mechanism",sentence:"This is a complex mechanism.",thai:"กลไก"},
-  {word:"methodology",sentence:"The methodology is clear.",thai:"ระเบียบวิธี"},
-  {word:"miscellaneous",sentence:"Put these in miscellaneous.",thai:"เบ็ดเตล็ด"},
-  {word:"occurrence",sentence:"The occurrence was rare.",thai:"เหตุการณ์ที่เกิดขึ้น"},
-  {word:"parallel",sentence:"The lines are parallel.",thai:"ขนาน"},
-  {word:"participation",sentence:"Participation is required.",thai:"การมีส่วนร่วม"},
-  {word:"perseverance",sentence:"Success needs perseverance.",thai:"ความเพียร"},
-  {word:"phenomenon",sentence:"It is a natural phenomenon.",thai:"ปรากฏการณ์"},
-  {word:"privilege",sentence:"Education is a privilege.",thai:"สิทธิพิเศษ"},
-  {word:"procedure",sentence:"Follow the procedure carefully.",thai:"ขั้นตอน"},
-  {word:"psychological",sentence:"It has psychological effects.",thai:"ทางจิตวิทยา"},
-  {word:"recommendation",sentence:"Thank you for your recommendation.",thai:"คำแนะนำ"},
-  {word:"responsibility",sentence:"This is your responsibility.",thai:"ความรับผิดชอบ"},
-  {word:"significant",sentence:"This is a significant change.",thai:"สำคัญ"},
-  {word:"strategy",sentence:"We need a new strategy.",thai:"กลยุทธ์"},
-  {word:"substantial",sentence:"The increase is substantial.",thai:"มากพอสมควร"},
-  {word:"technology",sentence:"Technology is evolving fast.",thai:"เทคโนโลยี"},
-  {word:"throughout",sentence:"He worked throughout the night.",thai:"ตลอดทั่วทั้ง"},
-  {word:"ultimately",sentence:"Ultimately, we succeeded.",thai:"ในท้ายที่สุด"}
+const sampleWords = [
+  {word:"Adequate", sentence:"The resources are adequate for the project.", thai:"เพียงพอ"},
+  {word:"Strategy", sentence:"We need a better strategy to win.", thai:"กลยุทธ์"},
+  {word:"Influence", sentence:"Parents influence their children.", thai:"อิทธิพล"},
+  {word:"Etiquette", sentence:"Good etiquette is important.", thai:"มารยาท"},
+  {word:"Obligatory", sentence:"Wearing a uniform is obligatory.", thai:"จำเป็นต้องทำ"},
+  {word:"Accommodate", sentence:"The hotel can accommodate many guests.", thai:"รองรับ"},
+  {word:"Aspire", sentence:"She aspires to be a doctor.", thai:"มุ่งหวัง"},
+  {word:"Legislation", sentence:"New legislation was introduced.", thai:"กฎหมาย"},
+  {word:"Immense", sentence:"He showed immense courage.", thai:"มหาศาล"},
+  {word:"Inevitable", sentence:"Failure is inevitable sometimes.", thai:"หลีกเลี่ยงไม่ได้"}
 ];
 
 let words = [];
-let current = 0;
 let order = [];
+let current = 0;
 let userAnswers = [];
 let checkedAnswers = [];
 
-function shuffle(){
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function escapeRegExp(str){
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeEntry(line){
+  const parts = line.split("|").map(x => x.trim());
+  if(parts.length < 3) return null;
+
+  const word = parts[0];
+  const sentence = parts[1];
+  const thai = parts.slice(2).join("|").trim();
+
+  if(!word || !sentence || !thai) return null;
+  return { word, sentence, thai };
+}
+
+function clearInput(){
+  document.getElementById("wordInput").value = "";
+  document.getElementById("setupStatus").innerText = "";
+}
+
+function uploadWords(){
+  const raw = document.getElementById("wordInput").value.trim();
+  const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+
+  if(lines.length < 1){
+    showSetupStatus("⚠️ กรุณาใส่อย่างน้อย 1 คำ");
+    return;
+  }
+
+  const parsed = [];
+  for(const line of lines){
+    const item = normalizeEntry(line);
+    if(!item){
+      showSetupStatus("⚠️ รูปแบบไม่ถูกต้อง ต้องเป็น Word|Sentence|คำแปลไทย");
+      return;
+    }
+    parsed.push(item);
+  }
+
+  const lowerWords = parsed.map(x => x.word.toLowerCase());
+  const uniqueWords = new Set(lowerWords);
+  if(uniqueWords.size !== parsed.length){
+    showSetupStatus("⚠️ พบคำศัพท์ซ้ำ กรุณาแก้ก่อน");
+    return;
+  }
+
+  words = parsed;
+  startGame();
+}
+
+function loadDefaultSet(){
+  words = [...sampleWords];
+  startGame();
+}
+
+function showSetupStatus(message){
+  const el = document.getElementById("setupStatus");
+  el.innerText = message;
+}
+
+function startGame(){
+  shuffleOrder();
+  current = 0;
+  userAnswers = new Array(words.length).fill("");
+  checkedAnswers = new Array(words.length).fill(null);
+
+  document.getElementById("setupStatus").innerText = "";
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("summaryScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("totalWordsBadge").innerText = "Total: " + words.length + " words";
+  loadWord();
+}
+
+function shuffleOrder(){
   order = [...Array(words.length).keys()];
   for(let i = order.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
@@ -246,104 +374,32 @@ function shuffle(){
   }
 }
 
-function escapeRegExp(str){
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function fallbackSentence(word){
-  return "Please spell the word " + word + ".";
-}
-
-function normalizeEntry(line){
-  const parts = line.split("|").map(x => x.trim());
-  if(parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) return null;
-
-  const word = parts[0];
-  const sentence = parts[1];
-  const thai = parts.slice(2).join("|").trim();
-
-  return { word, sentence, thai };
-}
-
-function uploadWords(){
-  const raw = document.getElementById("wordInput").value.trim();
-  const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-
-  if(lines.length !== 50){
-    document.getElementById("setupStatus").innerText = "⚠️ Please enter exactly 50 lines. Now: " + lines.length;
-    return;
+function maskedSentence(sentence, word){
+  try{
+    return sentence.replace(new RegExp(escapeRegExp(word), "gi"), "_____");
+  }catch{
+    return sentence;
   }
-
-  const parsed = lines.map(normalizeEntry).filter(Boolean);
-  const uniqueWords = new Set(parsed.map(x => x.word.toLowerCase()));
-
-  if(parsed.length !== 50){
-    document.getElementById("setupStatus").innerText = "⚠️ Every line must be in this format: Word|Sentence|คำแปลไทย";
-    return;
-  }
-
-  if(uniqueWords.size !== 50){
-    document.getElementById("setupStatus").innerText = "⚠️ Please make sure all 50 words are not duplicated.";
-    return;
-  }
-
-  words = parsed;
-  document.getElementById("wordInput").value = "";
-  document.getElementById("setupStatus").innerText = "";
-  document.getElementById("setupScreen").classList.add("hidden");
-  document.getElementById("summaryScreen").classList.add("hidden");
-  document.getElementById("gameScreen").classList.remove("hidden");
-  start();
-}
-
-function loadDefaultSet(){
-  words = [...defaultWords];
-  document.getElementById("wordInput").value = "";
-  document.getElementById("setupStatus").innerText = "";
-  document.getElementById("setupScreen").classList.add("hidden");
-  document.getElementById("summaryScreen").classList.add("hidden");
-  document.getElementById("gameScreen").classList.remove("hidden");
-  start();
-}
-
-function start(){
-  shuffle();
-  current = 0;
-  userAnswers = new Array(words.length).fill("");
-  checkedAnswers = new Array(words.length).fill(null);
-  loadWord();
 }
 
 function loadWord(){
-  if(!words.length) return;
-
-  let w = words[order[current]];
-  let hiddenSentence = w.sentence;
-
-  if(w.word){
-    try{
-      hiddenSentence = w.sentence.replace(new RegExp(escapeRegExp(w.word), "gi"), "_____");
-    }catch(e){
-      hiddenSentence = fallbackSentence("this word");
-    }
-  }
-
-  document.getElementById("sentence").innerText = hiddenSentence;
-  document.getElementById("ipa").innerText = "";
-  document.getElementById("thaiMeaning").innerText = "";
+  const item = words[order[current]];
   document.getElementById("progress").innerText = (current + 1) + " / " + words.length;
+  document.getElementById("sentence").innerText = maskedSentence(item.sentence, item.word);
+  document.getElementById("thaiMeaning").innerText = "";
   document.getElementById("answer").value = userAnswers[current] || "";
   document.getElementById("result").innerText = "";
+  document.getElementById("result").className = "result";
   document.getElementById("answer").focus();
 }
 
 function speak(text){
   if(!text) return;
-  let u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = 0.9;
   speechSynthesis.cancel();
-  speechSynthesis.speak(u);
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
 }
 
 function speakWord(){
@@ -353,129 +409,106 @@ function speakWord(){
 
 function speakSentence(){
   if(!words.length) return;
-  const sentence = words[order[current]].sentence || fallbackSentence(words[order[current]].word);
-  speak(sentence);
+  speak(words[order[current]].sentence);
 }
 
-function check(){
-  if(!words.length) return;
-
-  let typed = document.getElementById("answer").value.trim();
-  let ans = typed.toLowerCase();
-  let item = words[order[current]];
-  let correctWord = item.word.trim();
-  let correct = correctWord.toLowerCase();
-  let thai = item.thai || "-";
+function checkAnswer(){
+  const item = words[order[current]];
+  const typed = document.getElementById("answer").value.trim();
+  const result = document.getElementById("result");
+  const thaiEl = document.getElementById("thaiMeaning");
 
   userAnswers[current] = typed;
-  document.getElementById("thaiMeaning").innerText = "คำแปลไทย: " + thai;
+  thaiEl.innerText = "คำแปลไทย: " + item.thai;
 
-  if(ans === correct){
+  if(typed && typed.toLowerCase() === item.word.toLowerCase()){
     checkedAnswers[current] = true;
-    document.getElementById("result").innerText = "✅ Correct\nคำแปลไทย: " + thai;
-  }else{
+    result.className = "result good";
+    result.innerText = "✅ Correct\nคำแปลไทย: " + item.thai;
+  } else {
     checkedAnswers[current] = false;
-    document.getElementById("result").innerText = "❌ Correct answer: " + correctWord + "\nคำแปลไทย: " + thai;
+    result.className = "result bad";
+    result.innerText = "❌ Correct answer: " + item.word + "\nคำแปลไทย: " + item.thai;
   }
 }
 
-function next(){
-  if(!words.length) return;
-
+function nextWord(){
   userAnswers[current] = document.getElementById("answer").value.trim();
 
   if(current < words.length - 1){
     current++;
     loadWord();
   }else{
-    document.getElementById("sentence").innerText = "🎉 Finished!";
-    document.getElementById("ipa").innerText = "";
+    document.getElementById("sentence").innerText = "🎉 ครบทุกคำแล้ว";
     document.getElementById("thaiMeaning").innerText = "";
+    document.getElementById("result").className = "result warn-text";
+    document.getElementById("result").innerText = "กด Submit เพื่อดูคะแนน";
     document.getElementById("progress").innerText = words.length + " / " + words.length;
-    document.getElementById("result").innerText = "Press Submit to see your score.";
   }
 }
 
 function submitQuiz(){
-  if(!words.length) return;
-
   userAnswers[current] = document.getElementById("answer").value.trim();
 
   let score = 0;
-  let wrongHtml = "";
-  let unansweredHtml = "";
-  let correctHtml = "";
+  let correctCount = 0;
   let wrongCount = 0;
   let unansweredCount = 0;
-  let correctCount = 0;
+
+  let correctHtml = "";
+  let wrongHtml = "";
+  let unansweredHtml = "";
 
   for(let i = 0; i < words.length; i++){
     const item = words[order[i]];
-    const correctWord = item.word;
-    const thai = item.thai || "-";
     const user = (userAnswers[i] || "").trim();
+    const correctWord = item.word;
+    const thai = item.thai;
 
     if(user === ""){
       unansweredCount++;
-      unansweredHtml += `<div class="summary-item unanswered"><b>${i + 1}.</b> Correct: ${correctWord} | ไทย: ${thai}</div>`;
-    }else if(user.toLowerCase() === correctWord.toLowerCase()){
+      unansweredHtml += `<div class="item warn-text"><b>${i + 1}.</b> ${escapeHtml(correctWord)} | ไทย: ${escapeHtml(thai)}</div>`;
+    } else if(user.toLowerCase() === correctWord.toLowerCase()){
       score++;
       correctCount++;
-      correctHtml += `<div class="summary-item correct"><b>${i + 1}.</b> ${correctWord} | ไทย: ${thai}</div>`;
-    }else{
+      correctHtml += `<div class="item good"><b>${i + 1}.</b> ${escapeHtml(correctWord)} | ไทย: ${escapeHtml(thai)}</div>`;
+    } else {
       wrongCount++;
-      wrongHtml += `<div class="summary-item wrong"><b>${i + 1}.</b> Your answer: ${user} | Correct: ${correctWord} | ไทย: ${thai}</div>`;
+      wrongHtml += `<div class="item bad"><b>${i + 1}.</b> Your answer: ${escapeHtml(user)} | Correct: ${escapeHtml(correctWord)} | ไทย: ${escapeHtml(thai)}</div>`;
     }
   }
 
   document.getElementById("finalScore").innerText = `Score: ${score} / ${words.length}`;
+  document.getElementById("sumTotal").innerText = words.length;
+  document.getElementById("sumCorrect").innerText = correctCount;
+  document.getElementById("sumWrong").innerText = wrongCount;
+  document.getElementById("sumUnanswered").innerText = unansweredCount;
 
-  document.getElementById("overviewList").innerHTML = `
-    <div class="summary-item"><b>Total:</b> ${words.length}</div>
-    <div class="summary-item correct"><b>Correct:</b> ${correctCount}</div>
-    <div class="summary-item wrong"><b>Wrong:</b> ${wrongCount}</div>
-    <div class="summary-item unanswered"><b>Unanswered:</b> ${unansweredCount}</div>
-  `;
-
-  document.getElementById("wrongList").innerHTML =
-    wrongHtml || `<div class="summary-item">-</div>`;
-
-  document.getElementById("unansweredList").innerHTML =
-    unansweredHtml || `<div class="summary-item">-</div>`;
-
-  document.getElementById("correctList").innerHTML =
-    correctHtml || `<div class="summary-item">-</div>`;
+  document.getElementById("correctList").innerHTML = correctHtml || `<div class="item">-</div>`;
+  document.getElementById("wrongList").innerHTML = wrongHtml || `<div class="item">-</div>`;
+  document.getElementById("unansweredList").innerHTML = unansweredHtml || `<div class="item">-</div>`;
 
   document.getElementById("gameScreen").classList.add("hidden");
-  document.getElementById("setupScreen").classList.add("hidden");
   document.getElementById("summaryScreen").classList.remove("hidden");
 }
 
 function restartGame(){
   if(!words.length) return;
-  document.getElementById("summaryScreen").classList.add("hidden");
-  document.getElementById("setupScreen").classList.add("hidden");
-  document.getElementById("gameScreen").classList.remove("hidden");
-  start();
-}
-
-function restartGameFromSummary(){
-  restartGame();
+  startGame();
 }
 
 function backToSetup(){
   speechSynthesis.cancel();
-  document.getElementById("summaryScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("summaryScreen").classList.add("hidden");
   document.getElementById("setupScreen").classList.remove("hidden");
   document.getElementById("result").innerText = "";
   document.getElementById("thaiMeaning").innerText = "";
-  document.getElementById("finalScore").innerText = "";
 }
 
 document.getElementById("answer").addEventListener("keydown", function(e){
   if(e.key === "Enter"){
-    check();
+    checkAnswer();
   }
 });
 </script>
