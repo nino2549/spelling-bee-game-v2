@@ -45,10 +45,10 @@
   }
   textarea{
     width:100%;
-    min-height:300px;
+    min-height:320px;
     resize:vertical;
     text-align:left;
-    line-height:1.5;
+    line-height:1.6;
   }
   #ipa{
     color:#666;
@@ -56,9 +56,18 @@
     margin-bottom:10px;
     min-height:20px;
   }
-  #result{
-    min-height:28px;
+  #thaiMeaning{
+    color:#0f172a;
+    font-size:16px;
+    margin:6px 0 12px;
+    min-height:24px;
     font-weight:bold;
+  }
+  #result{
+    min-height:52px;
+    font-weight:bold;
+    line-height:1.6;
+    white-space:pre-line;
   }
   #setupStatus{
     margin-top:10px;
@@ -67,7 +76,7 @@
   .hint{
     color:#475569;
     font-size:14px;
-    line-height:1.5;
+    line-height:1.6;
     text-align:left;
     background:#f8fafc;
     border-radius:12px;
@@ -107,18 +116,18 @@
 
 <div class="box" id="setupScreen">
   <h2>📥 Upload 50 Words</h2>
-  <p>Paste 50 words below, one word per line. You can also use <b>word|IPA|sentence</b>.</p>
-  <textarea id="wordInput" placeholder="example&#10;acknowledge|/əkˈnɒlɪdʒ/|She refused to acknowledge the mistake."></textarea>
+  <p>Paste exactly 50 lines in this format: <b>Word|Sentence|คำแปลไทย</b></p>
+  <textarea id="wordInput" placeholder="acknowledge|She refused to acknowledge the mistake.|ยอมรับ&#10;acquaintance|He is just an acquaintance of mine.|คนรู้จัก"></textarea>
   <br />
   <button class="success" onclick="uploadWords()">Upload</button>
   <button class="secondary" onclick="loadDefaultSet()">Use Default Set</button>
   <p id="setupStatus"></p>
   <div class="hint">
-    <b>Formats supported</b><br>
-    1) <code>word</code><br>
-    2) <code>word|IPA</code><br>
-    3) <code>word|IPA|sentence</code><br><br>
-    After pressing <b>Upload</b>, the page will switch straight to the game screen and the typed list will be hidden.
+    <b>Required format</b><br>
+    <code>Word|Sentence|คำแปลไทย</code><br><br>
+    Example:<br>
+    <code>environment|We must protect the environment.|สิ่งแวดล้อม</code><br><br>
+    ต้องใส่ให้ครบ <b>50 บรรทัด</b> และคำศัพท์ต้องไม่ซ้ำกัน
   </div>
 </div>
 
@@ -127,6 +136,7 @@
   <p id="progress"></p>
   <p id="sentence">Press Start</p>
   <p id="ipa"></p>
+  <p id="thaiMeaning"></p>
   <input id="answer" placeholder="Type word" autocomplete="off" />
   <br />
   <button onclick="speakWord()">🔊 Word</button>
@@ -170,56 +180,56 @@
 
 <script>
 const defaultWords = [
-  {word:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",sentence:"She refused to acknowledge the mistake."},
-  {word:"acquaintance",ipa:"/əˈkweɪntəns/",sentence:"He is just an acquaintance of mine."},
-  {word:"aggressive",ipa:"/əˈɡresɪv/",sentence:"The dog became aggressive suddenly."},
-  {word:"amateur",ipa:"/ˈæmətə(r)/",sentence:"He is just an amateur photographer."},
-  {word:"apparent",ipa:"/əˈpærənt/",sentence:"It became apparent that he was wrong."},
-  {word:"argument",ipa:"/ˈɑːɡjumənt/",sentence:"They had an argument yesterday."},
-  {word:"bizarre",ipa:"/bɪˈzɑː(r)/",sentence:"That was a bizarre situation."},
-  {word:"calendar",ipa:"/ˈkælɪndə(r)/",sentence:"Check the calendar for the date."},
-  {word:"cemetery",ipa:"/ˈsemətri/",sentence:"The cemetery is very old."},
-  {word:"conscience",ipa:"/ˈkɒnʃəns/",sentence:"He has a clear conscience."},
-  {word:"bureaucracy",ipa:"/bjʊəˈrɒkrəsi/",sentence:"The system is full of bureaucracy."},
-  {word:"capability",ipa:"/ˌkeɪpəˈbɪləti/",sentence:"She has great capability."},
-  {word:"classification",ipa:"/ˌklæsɪfɪˈkeɪʃən/",sentence:"The classification was incorrect."},
-  {word:"collaboration",ipa:"/kəˌlæbəˈreɪʃən/",sentence:"The project requires collaboration."},
-  {word:"compensation",ipa:"/ˌkɒmpenˈseɪʃən/",sentence:"He received compensation."},
-  {word:"controversial",ipa:"/ˌkɒntrəˈvɜːʃəl/",sentence:"This topic is controversial."},
-  {word:"curiosity",ipa:"/ˌkjʊəriˈɒsəti/",sentence:"Curiosity drives learning."},
-  {word:"definitely",ipa:"/ˈdefɪnətli/",sentence:"I will definitely join."},
-  {word:"discipline",ipa:"/ˈdɪsəplɪn/",sentence:"Discipline is important."},
-  {word:"embarrassment",ipa:"/ɪmˈbærəsmənt/",sentence:"He felt embarrassment."},
-  {word:"environment",ipa:"/ɪnˈvaɪrənmənt/",sentence:"We must protect the environment."},
-  {word:"evaluation",ipa:"/ɪˌvæljuˈeɪʃən/",sentence:"The evaluation was fair."},
-  {word:"expenditure",ipa:"/ɪkˈspendɪtʃə(r)/",sentence:"Government expenditure increased."},
-  {word:"facilitate",ipa:"/fəˈsɪlɪteɪt/",sentence:"Technology facilitates communication."},
-  {word:"hierarchy",ipa:"/ˈhaɪərɑːki/",sentence:"The company has a clear hierarchy."},
-  {word:"hypothesis",ipa:"/haɪˈpɒθəsɪs/",sentence:"We tested the hypothesis."},
-  {word:"implementation",ipa:"/ˌɪmplɪmenˈteɪʃən/",sentence:"Implementation takes time."},
-  {word:"inevitable",ipa:"/ɪnˈevɪtəbl/",sentence:"Failure is inevitable sometimes."},
-  {word:"initiative",ipa:"/ɪˈnɪʃətɪv/",sentence:"She showed great initiative."},
-  {word:"interpretation",ipa:"/ɪnˌtɜːprɪˈteɪʃən/",sentence:"His interpretation was different."},
-  {word:"maintenance",ipa:"/ˈmeɪntənəns/",sentence:"The machine needs maintenance."},
-  {word:"mechanism",ipa:"/ˈmekənɪzəm/",sentence:"This is a complex mechanism."},
-  {word:"methodology",ipa:"/ˌmeθəˈdɒlədʒi/",sentence:"The methodology is clear."},
-  {word:"miscellaneous",ipa:"/ˌmɪsəˈleɪniəs/",sentence:"Put these in miscellaneous."},
-  {word:"occurrence",ipa:"/əˈkʌrəns/",sentence:"The occurrence was rare."},
-  {word:"parallel",ipa:"/ˈpærəlel/",sentence:"The lines are parallel."},
-  {word:"participation",ipa:"/pɑːˌtɪsɪˈpeɪʃən/",sentence:"Participation is required."},
-  {word:"perseverance",ipa:"/ˌpɜːsɪˈvɪərəns/",sentence:"Success needs perseverance."},
-  {word:"phenomenon",ipa:"/fəˈnɒmɪnən/",sentence:"It is a natural phenomenon."},
-  {word:"privilege",ipa:"/ˈprɪvəlɪdʒ/",sentence:"Education is a privilege."},
-  {word:"procedure",ipa:"/prəˈsiːdʒə(r)/",sentence:"Follow the procedure carefully."},
-  {word:"psychological",ipa:"/ˌsaɪkəˈlɒdʒɪkəl/",sentence:"It has psychological effects."},
-  {word:"recommendation",ipa:"/ˌrekəmenˈdeɪʃən/",sentence:"Thank you for your recommendation."},
-  {word:"responsibility",ipa:"/rɪˌspɒnsəˈbɪləti/",sentence:"This is your responsibility."},
-  {word:"significant",ipa:"/sɪɡˈnɪfɪkənt/",sentence:"This is a significant change."},
-  {word:"strategy",ipa:"/ˈstrætədʒi/",sentence:"We need a new strategy."},
-  {word:"substantial",ipa:"/səbˈstænʃəl/",sentence:"The increase is substantial."},
-  {word:"technology",ipa:"/tekˈnɒlədʒi/",sentence:"Technology is evolving fast."},
-  {word:"throughout",ipa:"/θruːˈaʊt/",sentence:"He worked throughout the night."},
-  {word:"ultimately",ipa:"/ˈʌltɪmətli/",sentence:"Ultimately, we succeeded."}
+  {word:"acknowledge",sentence:"She refused to acknowledge the mistake.",thai:"ยอมรับ"},
+  {word:"acquaintance",sentence:"He is just an acquaintance of mine.",thai:"คนรู้จัก"},
+  {word:"aggressive",sentence:"The dog became aggressive suddenly.",thai:"ก้าวร้าว"},
+  {word:"amateur",sentence:"He is just an amateur photographer.",thai:"มือสมัครเล่น"},
+  {word:"apparent",sentence:"It became apparent that he was wrong.",thai:"ชัดเจน"},
+  {word:"argument",sentence:"They had an argument yesterday.",thai:"การโต้เถียง"},
+  {word:"bizarre",sentence:"That was a bizarre situation.",thai:"แปลกประหลาด"},
+  {word:"calendar",sentence:"Check the calendar for the date.",thai:"ปฏิทิน"},
+  {word:"cemetery",sentence:"The cemetery is very old.",thai:"สุสาน"},
+  {word:"conscience",sentence:"He has a clear conscience.",thai:"มโนธรรม"},
+  {word:"bureaucracy",sentence:"The system is full of bureaucracy.",thai:"ระบบราชการ"},
+  {word:"capability",sentence:"She has great capability.",thai:"ความสามารถ"},
+  {word:"classification",sentence:"The classification was incorrect.",thai:"การจัดประเภท"},
+  {word:"collaboration",sentence:"The project requires collaboration.",thai:"ความร่วมมือ"},
+  {word:"compensation",sentence:"He received compensation.",thai:"ค่าชดเชย"},
+  {word:"controversial",sentence:"This topic is controversial.",thai:"เป็นที่ถกเถียง"},
+  {word:"curiosity",sentence:"Curiosity drives learning.",thai:"ความอยากรู้อยากเห็น"},
+  {word:"definitely",sentence:"I will definitely join.",thai:"อย่างแน่นอน"},
+  {word:"discipline",sentence:"Discipline is important.",thai:"วินัย"},
+  {word:"embarrassment",sentence:"He felt embarrassment.",thai:"ความอับอาย"},
+  {word:"environment",sentence:"We must protect the environment.",thai:"สิ่งแวดล้อม"},
+  {word:"evaluation",sentence:"The evaluation was fair.",thai:"การประเมิน"},
+  {word:"expenditure",sentence:"Government expenditure increased.",thai:"รายจ่าย"},
+  {word:"facilitate",sentence:"Technology facilitates communication.",thai:"อำนวยความสะดวก"},
+  {word:"hierarchy",sentence:"The company has a clear hierarchy.",thai:"ลำดับชั้น"},
+  {word:"hypothesis",sentence:"We tested the hypothesis.",thai:"สมมติฐาน"},
+  {word:"implementation",sentence:"Implementation takes time.",thai:"การนำไปใช้"},
+  {word:"inevitable",sentence:"Failure is inevitable sometimes.",thai:"หลีกเลี่ยงไม่ได้"},
+  {word:"initiative",sentence:"She showed great initiative.",thai:"ความคิดริเริ่ม"},
+  {word:"interpretation",sentence:"His interpretation was different.",thai:"การตีความ"},
+  {word:"maintenance",sentence:"The machine needs maintenance.",thai:"การบำรุงรักษา"},
+  {word:"mechanism",sentence:"This is a complex mechanism.",thai:"กลไก"},
+  {word:"methodology",sentence:"The methodology is clear.",thai:"ระเบียบวิธี"},
+  {word:"miscellaneous",sentence:"Put these in miscellaneous.",thai:"เบ็ดเตล็ด"},
+  {word:"occurrence",sentence:"The occurrence was rare.",thai:"เหตุการณ์ที่เกิดขึ้น"},
+  {word:"parallel",sentence:"The lines are parallel.",thai:"ขนาน"},
+  {word:"participation",sentence:"Participation is required.",thai:"การมีส่วนร่วม"},
+  {word:"perseverance",sentence:"Success needs perseverance.",thai:"ความเพียร"},
+  {word:"phenomenon",sentence:"It is a natural phenomenon.",thai:"ปรากฏการณ์"},
+  {word:"privilege",sentence:"Education is a privilege.",thai:"สิทธิพิเศษ"},
+  {word:"procedure",sentence:"Follow the procedure carefully.",thai:"ขั้นตอน"},
+  {word:"psychological",sentence:"It has psychological effects.",thai:"ทางจิตวิทยา"},
+  {word:"recommendation",sentence:"Thank you for your recommendation.",thai:"คำแนะนำ"},
+  {word:"responsibility",sentence:"This is your responsibility.",thai:"ความรับผิดชอบ"},
+  {word:"significant",sentence:"This is a significant change.",thai:"สำคัญ"},
+  {word:"strategy",sentence:"We need a new strategy.",thai:"กลยุทธ์"},
+  {word:"substantial",sentence:"The increase is substantial.",thai:"มากพอสมควร"},
+  {word:"technology",sentence:"Technology is evolving fast.",thai:"เทคโนโลยี"},
+  {word:"throughout",sentence:"He worked throughout the night.",thai:"ตลอดทั่วทั้ง"},
+  {word:"ultimately",sentence:"Ultimately, we succeeded.",thai:"ในท้ายที่สุด"}
 ];
 
 let words = [];
@@ -246,24 +256,13 @@ function fallbackSentence(word){
 
 function normalizeEntry(line){
   const parts = line.split("|").map(x => x.trim());
-  if(parts.length === 0 || !parts[0]) return null;
+  if(parts.length < 3 || !parts[0] || !parts[1] || !parts[2]) return null;
 
   const word = parts[0];
-  let ipa = "";
-  let sentence = "";
+  const sentence = parts[1];
+  const thai = parts.slice(2).join("|").trim();
 
-  if(parts.length === 1){
-    ipa = "";
-    sentence = fallbackSentence(word);
-  }else if(parts.length === 2){
-    ipa = "";
-    sentence = parts[1] || fallbackSentence(word);
-  }else{
-    ipa = parts[1] || "";
-    sentence = parts.slice(2).join("|").trim() || fallbackSentence(word);
-  }
-
-  return { word, ipa, sentence };
+  return { word, sentence, thai };
 }
 
 function uploadWords(){
@@ -278,8 +277,13 @@ function uploadWords(){
   const parsed = lines.map(normalizeEntry).filter(Boolean);
   const uniqueWords = new Set(parsed.map(x => x.word.toLowerCase()));
 
-  if(parsed.length !== 50 || uniqueWords.size !== 50){
-    document.getElementById("setupStatus").innerText = "⚠️ Please make sure all 50 words are valid and not duplicated.";
+  if(parsed.length !== 50){
+    document.getElementById("setupStatus").innerText = "⚠️ Every line must be in this format: Word|Sentence|คำแปลไทย";
+    return;
+  }
+
+  if(uniqueWords.size !== 50){
+    document.getElementById("setupStatus").innerText = "⚠️ Please make sure all 50 words are not duplicated.";
     return;
   }
 
@@ -325,7 +329,8 @@ function loadWord(){
   }
 
   document.getElementById("sentence").innerText = hiddenSentence;
-  document.getElementById("ipa").innerText = w.ipa || "";
+  document.getElementById("ipa").innerText = "";
+  document.getElementById("thaiMeaning").innerText = "";
   document.getElementById("progress").innerText = (current + 1) + " / " + words.length;
   document.getElementById("answer").value = userAnswers[current] || "";
   document.getElementById("result").innerText = "";
@@ -357,17 +362,20 @@ function check(){
 
   let typed = document.getElementById("answer").value.trim();
   let ans = typed.toLowerCase();
-  let correctWord = words[order[current]].word.trim();
+  let item = words[order[current]];
+  let correctWord = item.word.trim();
   let correct = correctWord.toLowerCase();
+  let thai = item.thai || "-";
 
   userAnswers[current] = typed;
+  document.getElementById("thaiMeaning").innerText = "คำแปลไทย: " + thai;
 
   if(ans === correct){
     checkedAnswers[current] = true;
-    document.getElementById("result").innerText = "✅ Correct";
+    document.getElementById("result").innerText = "✅ Correct\nคำแปลไทย: " + thai;
   }else{
     checkedAnswers[current] = false;
-    document.getElementById("result").innerText = "❌ Correct answer: " + correctWord;
+    document.getElementById("result").innerText = "❌ Correct answer: " + correctWord + "\nคำแปลไทย: " + thai;
   }
 }
 
@@ -382,6 +390,7 @@ function next(){
   }else{
     document.getElementById("sentence").innerText = "🎉 Finished!";
     document.getElementById("ipa").innerText = "";
+    document.getElementById("thaiMeaning").innerText = "";
     document.getElementById("progress").innerText = words.length + " / " + words.length;
     document.getElementById("result").innerText = "Press Submit to see your score.";
   }
@@ -403,18 +412,19 @@ function submitQuiz(){
   for(let i = 0; i < words.length; i++){
     const item = words[order[i]];
     const correctWord = item.word;
+    const thai = item.thai || "-";
     const user = (userAnswers[i] || "").trim();
 
     if(user === ""){
       unansweredCount++;
-      unansweredHtml += `<div class="summary-item unanswered"><b>${i + 1}.</b> Correct: ${correctWord}</div>`;
+      unansweredHtml += `<div class="summary-item unanswered"><b>${i + 1}.</b> Correct: ${correctWord} | ไทย: ${thai}</div>`;
     }else if(user.toLowerCase() === correctWord.toLowerCase()){
       score++;
       correctCount++;
-      correctHtml += `<div class="summary-item correct"><b>${i + 1}.</b> ${correctWord}</div>`;
+      correctHtml += `<div class="summary-item correct"><b>${i + 1}.</b> ${correctWord} | ไทย: ${thai}</div>`;
     }else{
       wrongCount++;
-      wrongHtml += `<div class="summary-item wrong"><b>${i + 1}.</b> Your answer: ${user} | Correct: ${correctWord}</div>`;
+      wrongHtml += `<div class="summary-item wrong"><b>${i + 1}.</b> Your answer: ${user} | Correct: ${correctWord} | ไทย: ${thai}</div>`;
     }
   }
 
@@ -459,6 +469,7 @@ function backToSetup(){
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("setupScreen").classList.remove("hidden");
   document.getElementById("result").innerText = "";
+  document.getElementById("thaiMeaning").innerText = "";
   document.getElementById("finalScore").innerText = "";
 }
 
